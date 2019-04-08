@@ -1,0 +1,4 @@
+General;{\n""general"":\n{\n""ext"":""%FileExtension%"",\n""duration"":""%Duration%"",\n""overallbitrate_mode"":""%OverallBitRate_Mode%"",\n""overallbitrate"":""%OverallBitRate%""\n},\n
+Video;""video"":\n{\n""bitrate_mode"":""%BitRate_Mode%"",\n""format"":""%Format%"",\n""bitrate"":""%BitRate%"",\n""width"":""%Width%"",\n""height"":""%Height%"",\n""framerate"":""%FrameRate%""\n},\n
+Audio;""audio"":\n{\n""format"":""%Format%"",\n""bitrate"":""%BitRate%"",\n""channels"":""%Channel(s)%""\n}\n}
+

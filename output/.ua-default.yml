@@ -1,0 +1,31 @@
+models:
+  default:
+    pack_with:
+      type: none
+    store_with:
+      type: local
+      path: /cloudgather/source/object-raw/output/
+      url: http://192.168.2.9:3090
+      user: 4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE
+      region: my-region
+      bucket: output
+      forcepath_style: "true"
+      timeout: ""
+      ismove: "false"
+      filekeyformat: '%CLASS_LAST1%/%HASHFULL%'
+      namingrule: ""
+    archive:
+      pack: "false"
+      includes: /cloudgather/source/raw/guizhou/SY-01/电视剧
+    databases:
+      db:
+        type: ""
+        host: ""
+        port: ""
+        database: ""
+        username: ""
+        password: ""
+    api:
+      rest:
+        type: rest
+        Url: http://192.168.2.7/restApi/movie/add

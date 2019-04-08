@@ -1,0 +1,59 @@
+# 基本节点，描述有多少个备份方案
+models:
+  gitlab:
+    # 备份打包
+    compress_with:
+      # 压缩方式
+      type: tgz
+    # 存储
+    store_with:
+      # 通过 scp 存储
+      type: scp
+      path: ~/backup
+      host: your-host.com
+      private_key: ~/.ssh/id_rsa
+      username: ubuntu
+      password: password
+      timeout: 300
+    # 需要备份的数据库
+    databases:
+      # 别名
+      gitlab:
+        # 类型: mysql, postgresql, redis
+        type: mysql
+        host: localhost
+        port: 3306
+        database: gitlab_production
+        username: root
+        password:
+      gitlab_redis:
+        type: redis
+        # 备份前是否要求 Redis 执行 SAVE 命令
+        invoke_save: true
+        # redis 的备份方式，远程服务器请用 sync
+        mode: sync
+        password:
+        # 如果 redis 在本地服务器，可以用 copy 模式
+        # mode: copy
+        # rdb_path: /var/db/redis/dump.rdb
+    # 文件备份
+    archive:
+      # 需要备份的文件、文件夹
+      includes:
+        - /home/git/.ssh/
+        - /etc/mysql/my.conf
+        - /etc/nginx/nginx.conf
+        - /etc/nginx/conf.d
+        - /etc/redis/redis.conf
+        - /etc/logrotate.d/
+      # 需要排除的文件／文件夹
+      excludes:
+        - /home/ubuntu/.ssh/known_hosts
+        - /etc/logrotate.d/syslog
+  gitlab_repos:
+    store_with:
+      type: local
+      path: /data/backups/gitlab-repos/
+    archive:
+      includes:
+        - /home/git/repositories

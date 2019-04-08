@@ -1,0 +1,27 @@
+# 基本节点，描述有多少个备份方案
+models:
+  ceph-backup:
+    # 备份打包
+    compress_with:
+      # 压缩方式
+      type: tgz
+    # 存储
+    store_with:
+
+      type: s3
+      path: /UploadAgent
+      endpoint: http://192.168.2.21:7480
+      region: default
+      access_key_id: COJK8QEHHUYK7TE6DAT2
+      access_key_secret: gAkHgHFR1ygwMR9VCKw1Ub1hejHHW3UkBL4VCmoN
+      bucket: my-bucket
+      path_style: true
+
+    # 文件备份
+    archive:
+      # 需要备份的文件、文件夹
+      includes:
+        - /Users/andrewcai/Desktop/SynologyDrive/MySpace/go/src/github.com/marmotcai/uploadagent/output
+
+      # 需要排除的文件／文件夹
+      excludes:

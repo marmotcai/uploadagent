@@ -1,0 +1,16 @@
+models:
+  ceph-backup:
+    archive:
+      includes:
+      - /Users/andrewcai/Desktop/SynologyDrive/MySpace/go/src/github.com/marmotcai/uploadagent/output
+      pack: true
+    pack_with:
+      type: none
+    store_with:
+      access_key_id: LTAIOYPor6F0ddr0
+      access_key_secret: zgKJdR8ChMaxdjCXv7vaKBZXxy6XS1
+      bucket: media-repository
+      endpoint: http://oss-cn-hangzhou.aliyuncs.com
+      path: /
+      region: oss-cn-hangzhou
+      type: s3
