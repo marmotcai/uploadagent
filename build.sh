@@ -8,7 +8,6 @@ if [ ! -d "${APP_SOURCE_DIR}" ]; then
 fi
 
 cd ${APP_SOURCE_DIR}
-git pull
 
 echo "go build ${APP_SOURCE_DIR} to ${OUTPUT_PATH}"
 go build -o ${OUTPUT_PATH}/uploadagent
