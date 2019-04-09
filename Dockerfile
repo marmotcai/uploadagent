@@ -17,7 +17,7 @@ ENV ENTRYPOINT_FILE=${APP_SOURCE_DIR}/build.sh
 RUN chmod +x ${ENTRYPOINT_FILE} && \
     ${ENTRYPOINT_FILE}
 
-FROM marmotcai/centos-base AS uploadagent
+FROM marmotcai/centos-base
 
 COPY --from=building ${OUTPUT_PACKETS} ${OUTPUT_PACKETS}
 
