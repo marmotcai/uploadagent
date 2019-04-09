@@ -69,6 +69,32 @@ func GetDefaultConfigPath() string {
 	return fmt.Sprintf("%s/.%s.yml", GetCurrentPath(), App_config)
 }
 
+// 判断所给路径文件/文件夹是否存在
+func PathExists(path string) (bool) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}
+
+// 判断所给路径是否为文件夹
+func IsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return s.IsDir()
+}
+
+// 判断所给路径是否为文件
+func IsFile(path string) bool {
+	return !IsDir(path)
+}
+
 func IsMediafile(filename string) bool {
 	suffix := strings.ToLower(path.Ext(filename))
 
@@ -246,7 +272,7 @@ func GetNameFromPath(url string) (string, error) {
 
 func GetFileKey(filepath, formatstr string) (string, string) {
 	filekey := fmt.Sprintf("%x",
-		sher.MakeSimhash(strconv.FormatInt(GetFileModTime(filepath),10) + "_" + path.Base(filepath), *top_n))
+		sher.MakeSimhash(strconv.FormatInt(GetEigenvalue(filepath),10) + "_" + path.Base(filepath), *top_n))
 	filekey = filekey + path.Ext(filepath)
 
 	destpath := ""

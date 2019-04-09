@@ -114,6 +114,10 @@ func NewModel_API() *Model_API {
 }
 
 func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepath string) error {
+	TempPath = path.Join(os.TempDir(), helper.App_name)
+	if (!helper.PathExists(TempPath)) {
+		helper.MkdirP(TempPath)
+	}
 	dc := new(DefaultConfig)
 
 	f, err := ioutil.ReadFile(filepath)

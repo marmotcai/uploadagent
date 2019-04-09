@@ -15,7 +15,7 @@ type Rest struct {
 func (Rest) Post(url string, data []byte) error {
 	req, _ := http.NewRequest("POST", url, bytes.NewReader(data))
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 

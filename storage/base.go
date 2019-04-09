@@ -7,7 +7,7 @@ import (
 	"github.com/marmotcai/uploadagent/logger"
 	"github.com/spf13/viper"
 	"path"
-	"path/filepath"
+	"strings"
 )
 
 // Base storage
@@ -22,12 +22,11 @@ type Base struct {
 type Context interface {
 	open() error
 	close()
-	upload(fileKey string) error
 	uploadfile(fileKey, filepath, remotepath string) (string, error)
 	delete(fileKey string) error
 }
 
-type UploadComplete func(model config.ModelConfig, key, localfile, remotefile string) (error)
+type UploadComplete func(model config.ModelConfig, data []byte) (error)
 
 func newBase(model config.ModelConfig, archivePath string) (base Base) {
 	base = Base{
@@ -52,6 +51,33 @@ func getremotepath(defaultpath, destpath string) (string) {
 	return remotepath
 }
 
+func uploadfile(ctx Context, model config.ModelConfig, filekey string, filepath string, remotepath string, complete UploadComplete) (error) {
+	remoteurl, err := ctx.uploadfile(filekey, filepath, remotepath)
+	if (err != nil) {
+		return fmt.Errorf("upload %s error : $s\n", filekey, err)
+	}
+
+	jsonfilekey := filekey + ".info"
+	jsonfile := config.TempPath + "/" + jsonfilekey
+	data, err := helper.GetJsondata(filekey, filepath, remoteurl, jsonfile)
+	if (err != nil) {
+		logger.Info("get mediainfo json error : %s", err)
+	}
+	if (helper.PathExists(jsonfile)) {
+		_, err := ctx.uploadfile(jsonfilekey, jsonfile, remotepath)
+		if (err != nil) {
+			logger.Info("upload %s error : $s\n", jsonfile, err)
+		}
+	}
+	err = complete(model, data)
+	if (err != nil) {
+		return fmt.Errorf("complete post %s error : $s\n", filekey, err)
+	}
+
+	fmt.Printf(remoteurl + "\n")
+	return nil
+}
+
 func uploaddir(ctx Context, model config.ModelConfig, path string, complete UploadComplete) (error) {
 
 	fmt.Printf("upload %s ...\n", path)
@@ -66,19 +92,11 @@ func uploaddir(ctx Context, model config.ModelConfig, path string, complete Uplo
 		destpath, filekey := helper.GetFileKey(filepath, model.StoreWith.Viper.GetString("FileKeyFormat"))
 		remotepath := getremotepath(model.StoreWith.Viper.GetString("path"), destpath)
 		fmt.Printf("Get file key : (%s to %s)", filekey, remotepath)
-		
-		remoteurl, err := ctx.uploadfile(filekey, filepath, remotepath)
+
+		err := uploadfile(ctx, model, filekey, filepath, remotepath, complete)
 		if (err != nil) {
-			return fmt.Errorf("upload %s error : $s\n", filekey, err)
+			return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
 		}
-
-                err = complete(model, filekey, filepath, remotepath)
-                if (err != nil) {
-                        return fmt.Errorf("complete post %s error : $s\n", filekey, err)
-                }
-
-		fmt.Printf(remoteurl + "\n")
-
 	}
 	return nil
 }
@@ -112,8 +130,7 @@ func Run(model config.ModelConfig, archivePath string, complete UploadComplete) 
 	defer ctx.close()
 
 	if (archivePath == "") {
-/*
-		includes := model.Archive.GetStringSlice("includes")
+		includes := strings.Split(model.Archive.GetString("includes"), "|")
 		includes = cleanPaths(includes)
 
 		excludes := model.Archive.GetStringSlice("excludes")
@@ -122,21 +139,19 @@ func Run(model config.ModelConfig, archivePath string, complete UploadComplete) 
 		for _, include := range includes {
 			uploaddir(ctx, model, include, complete)
 		}
-*/
-		include := model.Archive.GetString("includes")
-		err := uploaddir(ctx, model, include, complete)
-		if (err != nil) {
-			logger.Info("upload dir error, %v\n", err)
-		}
-	} else {
-		newFileKey := filepath.Base(archivePath)
 
-		err = ctx.upload(newFileKey)
-		if err != nil {
-			return err
+	} else {
+		destpath, filekey := helper.GetFileKey(archivePath, model.StoreWith.Viper.GetString("FileKeyFormat"))
+		remotepath := getremotepath(model.StoreWith.Viper.GetString("path"), destpath)
+		fmt.Printf("Get file key : (%s to %s)", filekey, remotepath)
+
+		err := uploadfile(ctx, model, filekey, archivePath, remotepath, complete)
+		if (err != nil) {
+			return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
 		}
+
 		cycler := Cycler{}
-		cycler.run(model.Name, newFileKey, base.keep, ctx.delete)
+		cycler.run(model.Name, filekey, base.keep, ctx.delete)
 	}
 
 	logger.Info("------------- Storage --------------\n")

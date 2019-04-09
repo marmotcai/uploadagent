@@ -28,7 +28,7 @@ func Perform(configfile, modelName string) {
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
 //ftp demo : -st "ftp" -surl "192.168.2.9:21" -suser "caijun:aa112233" -spath "cloudgather/source/raw/senyu/series" -keyformat "%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/guizhou/SY-01/电视剧/" coonfig
 //local demo : -st "local" -spath "/Users/andrewcai/9/raw/" -keyformat "%CLASS_LAST2%/%HASH_TOP2%/%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/chengdu/190124 YK 媒资/电影" config
-//api demo : -at "rest" -aurl "http://192.168.2.7:3182/restApi/movie/add" config
+//api demo : -at "rest" -aurl "http://192.168.2.7/restApi/movie/add" config
 func main() {
 	app := cli.NewApp()
 

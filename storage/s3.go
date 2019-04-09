@@ -103,32 +103,7 @@ func (ctx *S3) uploadfile(fileKey, filepath, remotepath string) (string, error) 
 
 	logger.Info("=>", result.Location)
 
-	return fileKey, nil
-}
-
-func (ctx *S3) upload(fileKey string) (err error) {
-
-	f, err := os.Open(ctx.archivePath)
-	if err != nil {
-		return fmt.Errorf("failed to open file %q, %v", ctx.archivePath, err)
-	}
-
-	remotePath := path.Join(ctx.path, fileKey)
-
-	input := &s3manager.UploadInput{
-		Bucket: aws.String(ctx.bucket),
-		Key:    aws.String(remotePath),
-		Body:   f,
-	}
-
-	logger.Info("-> S3 Uploading...")
-	result, err := ctx.client.Upload(input)
-	if err != nil {
-		return fmt.Errorf("failed to upload file, %v", err)
-	}
-
-	logger.Info("=>", result.Location)
-	return nil
+	return "s3://" + ctx.bucket + remotepath + fileKey, nil
 }
 
 func (ctx *S3) delete(fileKey string) (err error) {
