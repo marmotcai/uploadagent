@@ -3,11 +3,12 @@ FROM marmotcai/golang AS building
 MAINTAINER marmotcai "marmotcai@163.com"
 RUN yum install -y gcc-c++
 
+ENV WORK_DIR=/root
 ENV APP_NAME=uploadagent
 ENV APP_SOURCE_DIR=$GOPATH/src/github.com/marmotcai/${APP_NAME}
 ENV APP_GIT_URL=github.com/marmotcai/uploadagent
 ENV OUTPUT_PATH=${APP_SOURCE_DIR}/output
-ENV OUTPUT_PACKETS=/root/${APP_NAME}.tar.gz
+ENV OUTPUT_PACKETS=${WORK_DIR}/${APP_NAME}.tar.gz
 
 RUN gopm get -g -v ${APP_GIT_URL}
 WORKDIR ${APP_SOURCE_DIR}
@@ -19,15 +20,13 @@ RUN chmod +x ${ENTRYPOINT_FILE} && \
 FROM marmotcai/centos-base AS uploadagent
 
 ENV APP_NAME=uploadagent
-ENV UA_PATH=/root/ua
-RUN mkdir -p $UA_PATH
 
-COPY --from=building ${OUTPUT_PACKETS} ${UA_PATH}/
+COPY --from=building ${OUTPUT_PACKETS} ${OUTPUT_PACKETS}
 
-WORKDIR ${UA_PATH}
+WORKDIR ${WORK_DIR}
 RUN tar xvf ${APP_NAME}.tar.gz
 RUN rm -f ${APP_NAME}.tar.gz
 
-RUN chmod +x ./ua && ./ua
+RUN chmod +x ./${APP_NAME} && ./${APP_NAME}
 
 RUN yum install -y mediainfo
