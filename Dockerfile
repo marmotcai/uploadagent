@@ -19,11 +19,16 @@ RUN chmod +x ${ENTRYPOINT_FILE} && \
 
 FROM marmotcai/centos-base
 
+ENV WORK_DIR=/root
+ENV APP_NAME=uploadagent
+ENV OUTPUT_PATH=${WORK_DIR}/${APP_NAME}
+ENV OUTPUT_PACKETS=${WORK_DIR}/${APP_NAME}.tar.gz
+
 COPY --from=building ${OUTPUT_PACKETS} ${OUTPUT_PACKETS}
 
-WORKDIR ${WORK_DIR}
-RUN tar xvf ${APP_NAME}.tar.gz
-RUN rm -f ${APP_NAME}.tar.gz
+RUN mkdir -p ${OUTPUT_PATH}
+WORKDIR ${OUTPUT_PATH}
+RUN tar xvf ${OUTPUT_PACKETS} . && rm -f ${OUTPUT_PACKETS}
 
 RUN chmod +x ./${APP_NAME} && ./${APP_NAME}
 
