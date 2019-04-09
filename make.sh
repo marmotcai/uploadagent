@@ -15,7 +15,7 @@ case $cmd in
     ;;
 
     build)
-      docker build --target uploadagent -t ${param1} .
+      docker build -t ${param1} .
       docker run --rm -ti ${param1} /bin/bash
     ;;
 
