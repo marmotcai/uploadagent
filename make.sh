@@ -15,11 +15,8 @@ case $cmd in
     ;;
 
     build)
-      docker build --target building -t ${param1} .
+      docker build --target uploadagent -t ${param1} .
       docker run --rm -ti ${param1} /bin/bash
-      # docker run -ti --name=my-ua cgtech/ua-build /root/build
-      # docker cp my-ua:/root/go/bin/ua ./output
-      # docker rm -f my-ua
     ;;
 
     *)
