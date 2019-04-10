@@ -74,24 +74,22 @@ func uploadfile(ctx Context, model config.ModelConfig, filekey string, filepath 
 		return fmt.Errorf("complete post %s error : $s\n", filekey, err)
 	}
 
-	fmt.Printf(remoteurl + "\n")
 	return nil
 }
 
 func uploaddir(ctx Context, model config.ModelConfig, path string, complete UploadComplete) (error) {
-
-	fmt.Printf("upload %s ...\n", path)
+	logger.Info("upload ", path)
 
 	files, _ := helper.GetFilelist(path, "")
 	for _, filepath := range files {
-		fmt.Printf("upload %s ...\n", filepath)
+		logger.Info("-- ", filepath)
 		if (helper.IsTempfile(filepath)) {
 			continue
 		}
 
 		destpath, filekey := helper.GetFileKey(filepath, model.StoreWith.Viper.GetString("FileKeyFormat"))
 		remotepath := getremotepath(model.StoreWith.Viper.GetString("path"), destpath)
-		fmt.Printf("Get file key : (%s to %s)", filekey, remotepath)
+		logger.Info("get file key :", filekey, remotepath)
 
 		err := uploadfile(ctx, model, filekey, filepath, remotepath, complete)
 		if (err != nil) {

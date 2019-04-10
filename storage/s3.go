@@ -84,6 +84,7 @@ func (ctx *S3) open() (err error) {
 func (ctx *S3) close() {}
 
 func (ctx *S3) uploadfile(fileKey, filepath, remotepath string) (string, error) {
+	logger.Info("open file :", filepath)
 	f, err := os.Open(filepath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open file %q, %v", filepath, err)
@@ -95,15 +96,16 @@ func (ctx *S3) uploadfile(fileKey, filepath, remotepath string) (string, error) 
 		Body:   f,
 	}
 
-	logger.Info("-> S3 Uploading...")
+	logger.Info("-> S3 Uploading :", *input.Bucket, *input.Key)
 	result, err := ctx.client.Upload(input)
 	if err != nil {
+		logger.Info("failed to upload file, %v", err)
 		return "", fmt.Errorf("failed to upload file, %v", err)
 	}
+	url := "s3://" + ctx.bucket + remotepath + fileKey
+	logger.Info("=>", result.Location, url)
 
-	logger.Info("=>", result.Location)
-
-	return "s3://" + ctx.bucket + remotepath + fileKey, nil
+	return url, nil
 }
 
 func (ctx *S3) delete(fileKey string) (err error) {
