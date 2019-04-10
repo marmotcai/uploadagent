@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
 	"os"
 	"path"
@@ -53,14 +52,12 @@ func (ctx *FTP) MkdirP(remotepath string) (error) {
 }
 
 func (ctx *FTP) uploadfile(fileKey, filepath, remotepath string) (string, error) {
-
-	logger.Info("-> Uploading...")
-
 	err := ctx.MkdirP(remotepath)
 	if err != nil {
 		return "", err
 	}
 
+	logger.Info("open file :", filepath)
 	file, err := os.Open(filepath)
 	if err != nil {
 		return "", err
@@ -69,14 +66,18 @@ func (ctx *FTP) uploadfile(fileKey, filepath, remotepath string) (string, error)
 
 	remotefilepath := path.Join(remotepath, fileKey)
 
+	logger.Info("-> FTP Uploading :", remotefilepath, file)
 	err = ctx.client.Store(remotefilepath, file)
 	if err != nil {
-		fmt.Printf("upload error (%s)\n", err)
+		logger.Info("failed to upload file, %v", err)
+		fmt.Printf("failed to upload file, %v", err)
 		return "", err
 	}
 
-	logger.Info("Store successed")
-	return remotefilepath, nil
+	url := remotefilepath
+	// url = "ftp://" + ctx.host + ":" + ctx.port + url
+
+	return url, nil
 }
 
 func (ctx *FTP) open() (err error) {
@@ -120,12 +121,6 @@ func (ctx *FTP) open() (err error) {
 
 func (ctx *FTP) close() {
 	ctx.client.Close()
-}
-
-func (ctx *FTP) upload(fileKey string) (error) {
-	destpath, filekey := helper.GetFileKey(ctx.archivePath, ctx.model.StoreWith.Viper.GetString("FileKeyFormat"))
-	_, err := ctx.uploadfile(filekey, ctx.archivePath, destpath)
-	return err
 }
 
 func (ctx *FTP) delete(fileKey string) (err error) {

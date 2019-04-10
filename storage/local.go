@@ -37,7 +37,11 @@ func (ctx *Local) uploadfile(fileKey, filepath, remotepath string) (string, erro
 	if (cmdstr == "mv") {
 		return remotefilepath, nil
 	}
-	return "file://" + remotefilepath, nil
+
+	url := remotefilepath
+	// url = "file://" + url
+
+	return url, nil
 }
 
 func (ctx *Local) open() (err error) {

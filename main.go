@@ -24,7 +24,7 @@ func Perform(configfile, modelName string) {
 }
 
 //db demo : -dt "mysql" -dh "db.cloudgather.cn" -dp "3306" -dd "ms" -du "root" -dw "123456" config
-//s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "output" -ssorcepath_style "true" -keyformat "%CLASS_LAST2%/%HASH_TOP2%/%HASHFULL%" -l "/Users/andrewcai/9/raw/guizhou/SY-01/电视剧/" config
+//s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "input" -ssorcepath_style "true" -keyformat "%CLASS_LAST0%/%HASH_TOP0%/%HASHFULL%" -l "./" exec
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
 //ftp demo : -st "ftp" -surl "192.168.2.9:21" -suser "caijun:aa112233" -spath "cloudgather/source/raw/senyu/series" -keyformat "%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/guizhou/SY-01/电视剧/" coonfig
 //local demo : -st "local" -spath "/Users/andrewcai/9/raw/" -keyformat "%CLASS_LAST2%/%HASH_TOP2%/%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/chengdu/190124 YK 媒资/电影" config
