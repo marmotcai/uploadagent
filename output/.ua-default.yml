@@ -16,7 +16,7 @@ models:
       namingrule: ""
     archive:
       pack: "false"
-      includes: ./test111
+      includes: ./test
     databases:
       db:
         type: ""

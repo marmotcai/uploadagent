@@ -205,8 +205,9 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 		}
 
 	default:
-		fmt.Println("not a vowel")
 	}
+
+	logger.Info("load store config for " + dc.Models.M.Store_with.Type)
 
 	switch db.Type {
 	case "mysql", "postgresql", "redis":
@@ -232,8 +233,9 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 			}
 		}
 	default:
-		fmt.Println("not a vowel")
 	}
+
+	logger.Info("load db config for " + dc.Models.M.Databases.DB_with.Type)
 
 	switch api.Type {
 	case "rest": {
@@ -243,8 +245,9 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 			}
 		}
 	default:
-		fmt.Println("not a vowel")
 	}
+
+	logger.Info("load api config for " + dc.Models.M.API.API_with.Type)
 
 	d, err := yaml.Marshal(dc)
 
