@@ -240,16 +240,23 @@ func GetNameFromPath(url string) (string, error) {
 		}
 
 		var percent float64
-		tSimilarText := SimilarText(basefilename, fi.Name(), &percent)
+		SimilarText(basefilename, fi.Name(), &percent)
 
 		if (percent > 60) {
 			counter ++
 			if (counter > 3) {
-				return fmt.Errorf("OK:" + path.Base(parentdir) + "-" + strings.TrimSuffix(basefilename, suffix))
+				dirname := path.Base(parentdir)
+				name := strings.TrimSuffix(basefilename, suffix)
+				SimilarText(dirname, name, &percent)
+
+				if (percent > 60) {
+					return fmt.Errorf("OK:" + name)
+				}
+
+				return fmt.Errorf("OK:" + dirname + "-" + name)
 			}
 		}
 
-		fmt.Print(tSimilarText)
 		return nil})
 
 	if (err != nil) {
