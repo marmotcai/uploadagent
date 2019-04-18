@@ -248,11 +248,13 @@ func GetNameFromPath(url string) (string, error) {
 				dirname := path.Base(parentdir)
 				name := strings.TrimSuffix(basefilename, suffix)
 
-				SimilarText(name, dirname, &percent)
-				if (percent > 60) {
-				/*if (strings.Contains(name, dirname)) {*/
+				if (strings.Contains(name, dirname)) {
 					return fmt.Errorf("OK:" + name)
-				}
+				} else {
+					SimilarText(name, dirname, &percent)
+					if (percent > 60) {
+						return fmt.Errorf("OK:" + name)
+				}}
 
 				return fmt.Errorf("OK:" + dirname + "-" + name)
 			}
