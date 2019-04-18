@@ -33,3 +33,6 @@ RUN tar xvf ${OUTPUT_PACKETS} . && rm -f ${OUTPUT_PACKETS}
 RUN chmod +x ./${APP_NAME} && ./${APP_NAME}
 
 RUN yum install -y mediainfo
+
+RUN localedef -c -f UTF-8 -i zh_CN zh_CN.utf8
+ENV LC_ALL zh_CN.utf8
