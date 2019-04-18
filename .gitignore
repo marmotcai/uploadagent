@@ -10,7 +10,8 @@ libs
 captures
 .externalNativeBuild
 .DS_Store
-
+.ua-default.yml
+go_build_uploadagent
 *.ipr
 *.iws
 out
