@@ -27,16 +27,16 @@ var (
 
 // ModelConfig for special case
 type ModelConfig struct {
-	Name        string
-	DumpPath    string
-	PackWith    SubConfig
-	EncryptWith SubConfig
-	StoreWith   SubConfig
-	Archive     *viper.Viper
-	Databases   []SubConfig
-	Storages    []SubConfig
-	Api		    []SubConfig
-	Viper       *viper.Viper
+	Name        	string
+	DumpPath    	string
+	PackWith    	SubConfig
+	EncryptWith 	SubConfig
+	StoreWith   	SubConfig
+	Archive     	*viper.Viper
+	Databases   	[]SubConfig
+	Storages    	[]SubConfig
+	Api		    	[]SubConfig
+	Viper       	*viper.Viper
 }
 
 // SubConfig sub config info
@@ -75,6 +75,7 @@ type Model_API struct{
 }
 
 type Model struct {
+	LogsFilepath 			string `yaml:"logsfile"`
 	Pack_with struct {
 		Type              	string `yaml:"type"`
 	}
@@ -124,6 +125,12 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 	if (f != nil) {
 		err = yaml.Unmarshal(f, dc)
 	}
+
+	if (len(dc.Models.M.LogsFilepath) <= 0) {
+		dc.Models.M.LogsFilepath = path.Join(helper.GetCurrentPath(), "logs")
+	}
+
+	logger.Loadlogsfile(dc.Models.M.LogsFilepath, fmt.Sprintf("ua-%s.logs", time.Now().Format("2006-01-02-15")))
 
 	dc.Models.M.Pack_with.Type = "none"
 	dc.Models.M.Archive.Pack = "false"
@@ -207,8 +214,6 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 	default:
 	}
 
-	logger.Info("load store config for " + dc.Models.M.Store_with.Type)
-
 	switch db.Type {
 	case "mysql", "postgresql", "redis":
 		{
@@ -235,8 +240,6 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 	default:
 	}
 
-	logger.Info("load db config for " + dc.Models.M.Databases.DB_with.Type)
-
 	switch api.Type {
 	case "rest": {
 			dc.Models.M.API.API_with.Type = api.Type
@@ -247,11 +250,11 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 	default:
 	}
 
-	logger.Info("load api config for " + dc.Models.M.API.API_with.Type)
-
 	d, err := yaml.Marshal(dc)
 
 	err = ioutil.WriteFile(filepath, d, 0644)
+
+	logger.Info("load config file (" + filepath + ") finished.")
 
 	return err
 }

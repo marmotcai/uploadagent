@@ -23,10 +23,12 @@ type Context interface {
 	open() error
 	close()
 	uploadfile(fileKey, filepath, remotepath string) (string, error)
+	check(fileKey string) (error)
 	delete(fileKey string) error
 }
 
 type UploadComplete func(model config.ModelConfig, data []byte) (error)
+type CheckComplete func(model config.ModelConfig, data []byte) (error)
 
 func newBase(model config.ModelConfig, archivePath string) (base Base) {
 	base = Base{
@@ -99,6 +101,37 @@ func uploaddir(ctx Context, model config.ModelConfig, path string, complete Uplo
 	return nil
 }
 
+func checkfile(ctx Context, model config.ModelConfig, filekey string, filepath string, remotepath string, complete CheckComplete) (error) {
+	err := ctx.check(filekey)
+	if (err != nil) {
+		return fmt.Errorf("checkfile %s error : $s\n", filekey, err)
+	}
+
+	return nil
+}
+
+func checkdir(ctx Context, model config.ModelConfig, path string, complete CheckComplete) (error) {
+	logger.Info("upload ", path)
+
+	files, _ := helper.GetFilelist(path, "")
+	for _, filepath := range files {
+		logger.Info("-- ", filepath)
+		if (helper.IsTempfile(filepath)) {
+			continue
+		}
+
+		destpath, filekey := helper.GetFileKey(filepath, model.StoreWith.Viper.GetString("FileKeyFormat"))
+		remotepath := getremotepath(model.StoreWith.Viper.GetString("path"), destpath)
+		logger.Info("get file key :", filekey, remotepath)
+
+		err := checkfile(ctx, model, filekey, filepath, remotepath, complete)
+		if (err != nil) {
+			return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
+		}
+	}
+	return nil
+}
+
 // Run storage
 func Run(model config.ModelConfig, archivePath string, complete UploadComplete) (err error) {
 	logger.Info("------------- Storage --------------")
@@ -153,5 +186,48 @@ func Run(model config.ModelConfig, archivePath string, complete UploadComplete) 
 	}
 
 	logger.Info("------------- Storage --------------\n")
+	return nil
+}
+
+func Check(model config.ModelConfig, archivePath string, complete CheckComplete) (err error) {
+	logger.Info("------------- Storage --------------")
+
+	base := newBase(model, archivePath)
+	var ctx Context
+	switch model.StoreWith.Type {
+	case "local":
+		ctx = &Local{Base: base}
+	case "ftp":
+		ctx = &FTP{Base: base}
+	case "scp":
+		ctx = &SCP{Base: base}
+	case "s3":
+		ctx = &S3{Base: base}
+	case "oss":
+		ctx = &OSS{Base: base}
+	default:
+		return fmt.Errorf("[%s] storage type has not implement", model.StoreWith.Type)
+	}
+
+	logger.Info("=> Storage | " + model.StoreWith.Type)
+	err = ctx.open()
+	if err != nil {
+		return err
+	}
+	defer ctx.close()
+
+	if (archivePath == "") {
+		includes := strings.Split(model.Archive.GetString("includes"), "|")
+		includes = cleanPaths(includes)
+
+		excludes := model.Archive.GetStringSlice("excludes")
+		excludes = cleanPaths(excludes)
+
+		for _, include := range includes {
+			checkdir(ctx, model, include, complete)
+		}
+
+	}
+
 	return nil
 }

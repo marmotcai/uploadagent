@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/marmotcai/uploadagent/config"
 	"github.com/marmotcai/uploadagent/helper"
+	"github.com/marmotcai/uploadagent/logger"
 	_ "github.com/spf13/viper"
 	"gopkg.in/urfave/cli.v1"
 	"os"
@@ -17,18 +17,55 @@ func Perform(configfile, modelName string) {
 			model := Model{
 				Config: modelConfig,
 			}
-			model.perform()
+
+			logger.Info("======== " + modelConfig.Name + " ========")
+			logger.Info("begin perform... ")
+
+			err := model.perform()
+			if (err != nil) {
+				logger.Error(err)
+			}
+
+			logger.Info("end perform. ")
+			logger.Info("======== " + modelConfig.Name + " ========")
+
 			return
 		}
 	}
 }
 
-//db demo : -dt "mysql" -dh "db.cloudgather.cn" -dp "3306" -dd "ms" -du "root" -dw "123456" config
+func Check(configfile, modelName string) {
+	config.LoadConfig(configfile)
+
+	for _, modelConfig := range config.Models {
+		if (modelConfig.Name == modelName) || (len(modelName) == 0) {
+			model := Model{
+				Config: modelConfig,
+			}
+
+			logger.Info("======== " + modelConfig.Name + " ========")
+			logger.Info("begin check... ")
+
+			err := model.check()
+			if (err != nil) {
+				logger.Error(err)
+			}
+
+			logger.Info("end check. ")
+			logger.Info("======== " + modelConfig.Name + " ========")
+
+			return
+		}
+	}
+}
+
+//db demo : -dt "mysql" -dh "db.cloudgather.cn" -dp "33306" -dd "mms_test" -du "root" -dw "cg123456" config
 //s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "input" -ssorcepath_style "true" -keyformat "%CLASS_LAST0%/%HASH_TOP0%/%HASHFULL%" -l "./" exec
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
 //ftp demo : -st "ftp" -surl "192.168.2.9:21" -suser "caijun:aa112233" -spath "cloudgather/source/raw/senyu/series" -keyformat "%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/guizhou/SY-01/电视剧/" coonfig
 //local demo : -st "local" -spath "/Users/andrewcai/9/raw/" -keyformat "%CLASS_LAST2%/%HASH_TOP2%/%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/chengdu/190124 YK 媒资/电影" config
 //api demo : -at "rest" -aurl "http://192.168.2.7/restApi/movie/add" config
+//check demo : check
 func main() {
 	app := cli.NewApp()
 
@@ -144,7 +181,7 @@ func main() {
 			Aliases: []string{"config"},
 			Usage:   "write config file",
 			Action: func(c *cli.Context) error {
-				fmt.Printf("config ...\n")
+				logger.Info("config model ...")
 				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
 				return nil
 			},
@@ -154,10 +191,23 @@ func main() {
 			Aliases: []string{"exec"},
 			Usage:   "write config file & upload",
 			Action: func(c *cli.Context) error {
-				fmt.Printf("config & exec ...\n")
+				logger.Info("config & exec model...")
 				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
 
 				Perform(helper.GetDefaultConfigPath(), modelname)
+
+				return nil
+			},
+		},
+		{
+			Name:    "check",
+			Aliases: []string{"check"},
+			Usage:   "check data",
+			Action: func(c *cli.Context) error {
+				logger.Info("check data model...")
+				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
+
+				Check(helper.GetDefaultConfigPath(), modelname)
 
 				return nil
 			},
@@ -168,7 +218,7 @@ func main() {
 			Usage:   "load config file & exec",
 			Action: func(c *cli.Context) error {
 				if configfile != "" {
-					fmt.Println("load config file %s", configfile)
+					logger.Info("load config file %s", configfile)
 					config.LoadConfig(configfile)
 
 					Perform(configfile, modelname)

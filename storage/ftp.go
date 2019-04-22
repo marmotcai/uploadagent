@@ -31,6 +31,10 @@ type FTP struct {
 	client *goftp.Client
 }
 
+func (ctx *FTP) check(fileKey string) (error) {
+	panic("implement me")
+}
+
 func (ctx *FTP) MkdirP(remotepath string) (error) {
 	params := strings.Split(remotepath, "/")
 	dir := ""

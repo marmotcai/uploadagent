@@ -51,16 +51,15 @@ func PostMMS(model config.ModelConfig, data []byte) (error) {
 }
 
 // Perform model
-func (ctx Model) perform() {
-	logger.Info("======== " + ctx.Config.Name + " ========")
-	logger.Info("WorkDir:", ctx.Config.DumpPath+"\n")
+func (ctx Model) perform() (error) {
+
+	logger.Info("work dir: ", ctx.Config.DumpPath)
 	defer ctx.cleanup()
 
 	if len(ctx.Config.Databases) != 0 {
 		err := database.Run(ctx.Config)
 		if err != nil {
-			logger.Error(err)
-			return
+			return err
 		}
 	}
 
@@ -70,30 +69,43 @@ func (ctx Model) perform() {
 		if ctx.Config.Archive != nil {
 			err := archive.Run(ctx.Config)
 			if err != nil {
-				logger.Error(err)
-				return
+				return err
 			}
 		}
 
 		archivePath, err := compressor.Run(ctx.Config)
 		if err != nil {
-			logger.Error(err)
-			return
+			return err
 		}
 
 		archivePath, err = encryptor.Run(archivePath, ctx.Config)
 		if err != nil {
-			logger.Error(err)
-			return
+			return err
 		}
 	}
 
 	err := storage.Run(ctx.Config, archivePath, PostMMS)
 	if err != nil {
-		logger.Error(err)
-		return
+		return err
 	}
 
+	return nil
+}
+
+func (ctx Model) check() (error) {
+	if len(ctx.Config.Databases) != 0 {
+		err := database.Run(ctx.Config)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := storage.Check(ctx.Config, "", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Cleanup model temp files

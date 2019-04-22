@@ -34,6 +34,10 @@ type SCP struct {
 	client     scp.Client
 }
 
+func (ctx *SCP) check(fileKey string) (error) {
+	panic("implement me")
+}
+
 func (ctx *SCP) uploadfile(fileKey, filepath, remotepath string) (string, error) {
 	err := ctx.client.Connect()
 	if err != nil {

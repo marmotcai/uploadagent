@@ -1,11 +1,14 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
 	"path"
 	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // MySQL database
@@ -27,8 +30,9 @@ type MySQL struct {
 	additionalOptions []string
 }
 
-func (ctx *MySQL) perform() (err error) {
+func (ctx *MySQL) linkstr() string {
 	viper := ctx.viper
+
 	viper.SetDefault("host", "127.0.0.1")
 	viper.SetDefault("username", "root")
 	viper.SetDefault("port", 3306)
@@ -38,6 +42,15 @@ func (ctx *MySQL) perform() (err error) {
 	ctx.database = viper.GetString("database")
 	ctx.username = viper.GetString("username")
 	ctx.password = viper.GetString("password")
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", ctx.username, ctx.password, ctx.host, ctx.port, ctx.database)
+}
+
+func (ctx *MySQL) perform() (err error) {
+	sqlstr := ctx.linkstr()
+
+	viper := ctx.viper
+
 	addOpts := viper.GetString("additional_options")
 	if len(addOpts) > 0 {
 		ctx.additionalOptions = strings.Split(addOpts, " ")
@@ -48,7 +61,15 @@ func (ctx *MySQL) perform() (err error) {
 		return fmt.Errorf("mysql database config is required")
 	}
 
-	err = ctx.dump()
+	db, err := sql.Open("mysql", sqlstr)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer db.Close()
+
+	// err = ctx.dump()
 	return
 }
 

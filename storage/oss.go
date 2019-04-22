@@ -28,6 +28,10 @@ type OSS struct {
 	client          *oss.Bucket
 }
 
+func (ctx *OSS) check(fileKey string) (error) {
+	panic("implement me")
+}
+
 func (ctx *OSS) uploadfile(fileKey, filepath, remotepath string) (string, error) {
 	remotePath := path.Join(ctx.path, fileKey)
 

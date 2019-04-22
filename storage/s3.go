@@ -31,6 +31,9 @@ type S3 struct {
 	client *s3manager.Uploader
 }
 
+func (ctx *S3) check(fileKey string) (error) {
+	panic("implement me")
+}
 
 func cleanPaths(paths []string) (results []string) {
 	for _, p := range paths {

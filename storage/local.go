@@ -17,6 +17,10 @@ type Local struct {
 	filekeyformat string
 }
 
+func (ctx *Local) check(fileKey string) (error) {
+	panic("implement me")
+}
+
 func (ctx *Local) uploadfile(fileKey, filepath, remotepath string) (string, error) {
 
 	helper.MkdirP(remotepath)

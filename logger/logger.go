@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"log"
 	"os"
+	"path"
 )
 
 var (
@@ -15,10 +16,15 @@ var (
 func init() {
 	isTest := os.Getenv("GO_ENV") == "test"
 	if isTest {
-		os.MkdirAll("../log", 0777)
-		logfile, _ := os.OpenFile("../log/test.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		myLog = log.New(logfile, "", logFlag)
+		Loadlogsfile("../logs", "test.log")
 	}
+}
+
+func Loadlogsfile(dir, filename string) {
+	os.MkdirAll(dir, 0777)
+	logsfilename := path.Join(dir, filename)
+	logfile, _ := os.OpenFile(logsfilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	myLog = log.New(logfile, "", logFlag)
 }
 
 // Print log

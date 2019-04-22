@@ -82,7 +82,7 @@ func Run(model config.ModelConfig) error {
 			return err
 		}
 	}
-	logger.Info("------------- Databases -------------\n")
+	logger.Info("------------- Databases -------------")
 
 	return nil
 }
