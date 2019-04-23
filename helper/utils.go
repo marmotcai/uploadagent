@@ -104,16 +104,20 @@ func IsMediafile(filename string) bool {
 		(suffix == ".avi") ||
 		(suffix == ".mkv") ||
 		(suffix == ".mov") ||
-		(suffix == ".mp4") {
+		(suffix == ".mp4") ||
+		(suffix == ".rm") ||
+		(suffix == ".rmvb") ||
+		(suffix == ".mxf") {
 		return true
 	}
 	return false
 }
 
-func IsTempfile(filename string) bool {
-	suffix := path.Base(filename)[0: 1]
+func IsTempfile(filepath string) bool {
+	filename := path.Base(filepath)
+	first := filename[0: 1]
 
-	if 	(suffix == ".") {
+	if 	(first == ".") {
 		return true
 	}
 	return false

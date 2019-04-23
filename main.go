@@ -59,6 +59,7 @@ func Check(configfile, modelName string) {
 	}
 }
 
+//option demo : -logspath "./logs" -suffixw "rm/rmvb/mxf" -suffixb "exe/txt" config
 //db demo : -dt "mysql" -dh "db.cloudgather.cn" -dp "33306" -dd "mms_test" -du "root" -dw "cg123456" config
 //s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "input" -ssorcepath_style "true" -keyformat "%CLASS_LAST0%/%HASH_TOP0%/%HASHFULL%" -l "./" exec
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
@@ -79,9 +80,12 @@ func main() {
 
 	store := config.NewModel_Store()
 
+	option := config.NewModel_Option()
+
 	var configfile string
 	var localpath string
 	var modelname string
+
 
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
@@ -169,9 +173,23 @@ func main() {
 
 		//source path
 		cli.StringFlag{
-			Name:        "localpath, l",
-			Usage:       "local source path",
-			Destination: &localpath,
+			Name: "localpath, l", Usage: "local source path", Destination: &localpath,
+		},
+
+		//logs file path
+		cli.StringFlag{
+			Name: "Logs-Filepath, logspath", Usage: "logs file path", Destination: &option.LogsFilepath,
+		},
+
+
+		//suffix white
+		cli.StringFlag{
+			Name: "suffix-white, suffixw", Usage: "suffix-white", Destination: &option.Suffixwhite,
+		},
+
+		//suffix black
+		cli.StringFlag{
+			Name: "suffix-black, suffixb", Usage: "suffix-black", Destination: &option.Suffixblack,
 		},
 	}
 
@@ -182,7 +200,7 @@ func main() {
 			Usage:   "write config file",
 			Action: func(c *cli.Context) error {
 				logger.Info("config model ...")
-				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
+				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
 				return nil
 			},
 		},
@@ -192,7 +210,7 @@ func main() {
 			Usage:   "write config file & upload",
 			Action: func(c *cli.Context) error {
 				logger.Info("config & exec model...")
-				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
+				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
 
 				Perform(helper.GetDefaultConfigPath(), modelname)
 
@@ -205,7 +223,7 @@ func main() {
 			Usage:   "check data",
 			Action: func(c *cli.Context) error {
 				logger.Info("check data model...")
-				config.WriteConfig(store, db, api, localpath, helper.GetDefaultConfigPath())
+				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
 
 				Check(helper.GetDefaultConfigPath(), modelname)
 

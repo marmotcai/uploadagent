@@ -22,12 +22,17 @@ import (
 // additional_options:
 type MySQL struct {
 	Base
-	host              string
-	port              string
-	database          string
-	username          string
-	password          string
+	Obj					*sql.DB
+	host              	string
+	port              	string
+	database          	string
+	username          	string
+	password         	string
 	additionalOptions []string
+}
+
+func (ctx *MySQL) GetDBObj() *sql.DB {
+	return ctx.Obj
 }
 
 func (ctx *MySQL) linkstr() string {
@@ -46,7 +51,7 @@ func (ctx *MySQL) linkstr() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", ctx.username, ctx.password, ctx.host, ctx.port, ctx.database)
 }
 
-func (ctx *MySQL) perform() (err error) {
+func (ctx *MySQL) Perform() (err error) {
 	sqlstr := ctx.linkstr()
 
 	viper := ctx.viper
@@ -61,13 +66,13 @@ func (ctx *MySQL) perform() (err error) {
 		return fmt.Errorf("mysql database config is required")
 	}
 
-	db, err := sql.Open("mysql", sqlstr)
+	ctx.Obj, err = sql.Open("mysql", sqlstr)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	defer db.Close()
+	// defer ctx.Obj.Close()
 
 	// err = ctx.dump()
 	return

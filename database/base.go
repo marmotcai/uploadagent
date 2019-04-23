@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/marmotcai/uploadagent/config"
 	"github.com/marmotcai/uploadagent/helper"
@@ -19,8 +20,9 @@ type Base struct {
 }
 
 // Context database interface
-type Context interface {
-	perform() error
+type DBContext interface {
+	Perform() error
+	GetDBObj() *sql.DB
 }
 
 func newBase(model config.ModelConfig, dbConfig config.SubConfig) (base Base) {
@@ -35,14 +37,13 @@ func newBase(model config.ModelConfig, dbConfig config.SubConfig) (base Base) {
 	return
 }
 
-// New - initialize Database
-func runModel(model config.ModelConfig, dbConfig config.SubConfig) (err error) {
+func GetDBModel(model config.ModelConfig, dbConfig config.SubConfig) (DBContext) {
 	if (len(dbConfig.Type) == 0) {
 		return nil
 	}
 
 	base := newBase(model, dbConfig)
-	var ctx Context
+	var ctx DBContext
 	switch dbConfig.Type {
 	case "mysql":
 		ctx = &MySQL{Base: base}
@@ -54,13 +55,21 @@ func runModel(model config.ModelConfig, dbConfig config.SubConfig) (err error) {
 		ctx = &MongoDB{Base: base}
 	default:
 		logger.Warn(fmt.Errorf("model: %s databases.%s config `type: %s`, but is not implement", model.Name, dbConfig.Name, dbConfig.Type))
-		return
+		return nil
 	}
 
 	logger.Info("=> database |", dbConfig.Type, ":", base.name)
 
+	return ctx
+}
+
+
+// New - initialize Database
+func runModel(model config.ModelConfig, dbConfig config.SubConfig) (err error) {
+
+	ctx := GetDBModel(model, dbConfig)
 	// perform
-	err = ctx.perform()
+	err = ctx.Perform()
 	if err != nil {
 		return err
 	}

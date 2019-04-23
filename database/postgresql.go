@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
@@ -27,7 +28,11 @@ type PostgreSQL struct {
 	dumpCommand string
 }
 
-func (ctx PostgreSQL) perform() (err error) {
+func (ctx PostgreSQL) GetDBObj() *sql.DB {
+	panic("implement me")
+}
+
+func (ctx PostgreSQL) Perform() (err error) {
 	viper := ctx.viper
 	viper.SetDefault("host", "localhost")
 	viper.SetDefault("port", 5432)

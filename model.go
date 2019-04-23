@@ -100,7 +100,7 @@ func (ctx Model) check() (error) {
 		}
 	}
 
-	err := storage.Check(ctx.Config, "", nil)
+	err := storage.Check(ctx.Config, "", PostMMS)
 	if err != nil {
 		return err
 	}

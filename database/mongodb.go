@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
@@ -28,11 +29,15 @@ type MongoDB struct {
 	oplog    bool
 }
 
+func (ctx *MongoDB) GetDBObj() *sql.DB {
+	panic("implement me")
+}
+
 var (
 	mongodumpCli = "mongodump"
 )
 
-func (ctx *MongoDB) perform() (err error) {
+func (ctx *MongoDB) Perform() (err error) {
 	viper := ctx.viper
 	viper.SetDefault("oplog", false)
 	viper.SetDefault("host", "127.0.0.1")

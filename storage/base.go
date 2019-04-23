@@ -1,11 +1,15 @@
 package storage
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/marmotcai/uploadagent/config"
+	"github.com/marmotcai/uploadagent/database"
 	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"path"
 	"strings"
 )
@@ -19,7 +23,7 @@ type Base struct {
 }
 
 // Context storage interface
-type Context interface {
+type StorageContext interface {
 	open() error
 	close()
 	uploadfile(fileKey, filepath, remotepath string) (string, error)
@@ -28,7 +32,6 @@ type Context interface {
 }
 
 type UploadComplete func(model config.ModelConfig, data []byte) (error)
-type CheckComplete func(model config.ModelConfig, data []byte) (error)
 
 func newBase(model config.ModelConfig, archivePath string) (base Base) {
 	base = Base{
@@ -53,12 +56,7 @@ func getremotepath(defaultpath, destpath string) (string) {
 	return remotepath
 }
 
-func uploadfile(ctx Context, model config.ModelConfig, filekey string, filepath string, remotepath string, complete UploadComplete) (error) {
-	remoteurl, err := ctx.uploadfile(filekey, filepath, remotepath)
-	if (err != nil) {
-		return fmt.Errorf("upload %s error : $s\n", filekey, err)
-	}
-
+func uploadinfofile(ctx StorageContext, model config.ModelConfig, filekey, filepath, remotepath, remoteurl string, complete UploadComplete) (error) {
 	jsonfilekey := filekey + ".info"
 	jsonfile := config.TempPath + "/" + jsonfilekey
 	data, err := helper.GetJsondata(filekey, filepath, remoteurl, jsonfile)
@@ -75,14 +73,23 @@ func uploadfile(ctx Context, model config.ModelConfig, filekey string, filepath 
 	if (err != nil) {
 		return fmt.Errorf("complete post %s error : $s\n", filekey, err)
 	}
-
 	return nil
 }
 
-func uploaddir(ctx Context, model config.ModelConfig, path string, complete UploadComplete) (error) {
-	logger.Info("upload ", path)
+func uploadfile(ctx StorageContext, model config.ModelConfig, filekey string, filepath string, remotepath string, complete UploadComplete) (error) {
+	remoteurl, err := ctx.uploadfile(filekey, filepath, remotepath)
+	if (err != nil) {
+		return fmt.Errorf("upload %s error : $s\n", filekey, err)
+	}
+	err = uploadinfofile(ctx, model, filekey, filepath, remotepath, remoteurl, complete)
 
-	files, _ := helper.GetFilelist(path, "")
+	return err
+}
+
+func uploaddir(ctx StorageContext, model config.ModelConfig, dir string, complete UploadComplete) (error) {
+	logger.Info("upload ", dir)
+
+	files, _ := helper.GetFilelist(dir, "")
 	for _, filepath := range files {
 		logger.Info("-- ", filepath)
 		if (helper.IsTempfile(filepath)) {
@@ -101,7 +108,7 @@ func uploaddir(ctx Context, model config.ModelConfig, path string, complete Uplo
 	return nil
 }
 
-func checkfile(ctx Context, model config.ModelConfig, filekey string, filepath string, remotepath string, complete CheckComplete) (error) {
+func checkfile(ctx StorageContext, model config.ModelConfig, filekey string, filepath string, remotepath string, complete UploadComplete) (error) {
 	err := ctx.check(filekey)
 	if (err != nil) {
 		return fmt.Errorf("checkfile %s error : $s\n", filekey, err)
@@ -110,34 +117,131 @@ func checkfile(ctx Context, model config.ModelConfig, filekey string, filepath s
 	return nil
 }
 
-func checkdir(ctx Context, model config.ModelConfig, path string, complete CheckComplete) (error) {
-	logger.Info("upload ", path)
+func Query(dbobj sql.DB, sql string) (*sql.Rows, error) {
+	rows, err := dbobj.Query(sql)
+	if (err != nil) {
+		return nil, err
+	}
+	return rows, nil
+}
 
-	files, _ := helper.GetFilelist(path, "")
+func checkinfofile(dbobj *sql.DB, infofilepath string) (error) {
+
+	f, err := ioutil.ReadFile(infofilepath)
+	if err != nil {
+		return fmt.Errorf("Load .info failed (%s)", err.Error())
+	}
+
+	var inter interface{}
+	err = json.Unmarshal(f, &inter)
+	if err != nil {
+		return fmt.Errorf("json Unmarshal error (%s)", err.Error())
+	}
+
+	//要访问解码后的数据结构，需要先判断目标结构是否为预期的数据类型
+	mi, ok := inter.(map[string]interface{})
+	//然后通过for循环一一访问解码后的目标数据
+	if !ok {
+		return fmt.Errorf("mi can not get")
+	}
+
+	v := mi["general"].(map[string]interface{})
+	filekey := v["filekey"]
+
+	rows, err := dbobj.Query(fmt.Sprintf("SELECT id, code FROM cg_movie WHERE code = \"%s\"", filekey))
+	defer rows.Close()
+
+	if (err == nil) {
+		for rows.Next() {
+			var id string
+			var code string
+			err = rows.Scan(&id, &code)
+			if (err == nil) {
+				return nil
+			}
+		}
+	}
+
+	return fmt.Errorf("data not found in db")
+}
+
+
+func checkdir(ctx StorageContext, model config.ModelConfig, dir string, complete UploadComplete) (error) {
+	logger.Info("check ", dir)
+
+	var dbctx database.DBContext
+	if len(model.Databases) != 0 {
+		for _, dbCfg := range model.Databases {
+			dbctx = database.GetDBModel(model, dbCfg)
+			if dbctx != nil {
+				err := dbctx.Perform()
+				if (err != nil) {
+					logger.Error("db open failed (%s)", err)
+				}
+				break
+			}
+		}
+	}
+	if (dbctx == nil) {
+		return fmt.Errorf("db is not config, check failed")
+	}
+
+	suffix_white := model.OptionWith.GetString("suffix_white")
+
+	dbobj := dbctx.GetDBObj()
+	files, _ := helper.GetFilelist(dir, suffix_white)
 	for _, filepath := range files {
-		logger.Info("-- ", filepath)
+		logger.Info("--- check start ---")
+		logger.Info(filepath)
+
 		if (helper.IsTempfile(filepath)) {
+			err := ctx.open()
+			if (err != nil) {
+				logger.Info("storage open failed (%s)", err)
+			}
 			continue
 		}
 
-		destpath, filekey := helper.GetFileKey(filepath, model.StoreWith.Viper.GetString("FileKeyFormat"))
-		remotepath := getremotepath(model.StoreWith.Viper.GetString("path"), destpath)
-		logger.Info("get file key :", filekey, remotepath)
+		suffix := strings.ToLower(path.Ext(filepath))
 
-		err := checkfile(ctx, model, filekey, filepath, remotepath, complete)
-		if (err != nil) {
-			return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
+		if 	(suffix != ".info") {
+			infofilename := filepath + ".info"
+			if (helper.PathExists(infofilename)) {
+				//如果找到已经保存的文件则查询是否有对应的info文件，同时校验info文件是否上报到了数据库
+
+				err := checkinfofile(dbobj, infofilename)
+				if (err == nil) {
+					logger.Info("check info file ok: ", filepath)
+				} else {
+					logger.Error("check info file failed: ", err)
+				}
+
+			} else {
+				if (helper.IsMediafile(filepath)) {
+					logger.Error("info file not found! the media file: ", filepath)
+
+					uploadinfofile(ctx, model, path.Base(filepath), filepath, path.Dir(filepath), "", complete)
+				}
+			}
+		} else {
+			//如果是info文件则反查对应的数据文件是否存在，一般来说不会出现不存在的情况
+			mediafilepath := strings.Replace(filepath, suffix, "", -1)
+			if (!helper.PathExists(mediafilepath)) {
+				logger.Error("media file not found! the info file: ", filepath)
+			}
 		}
+		logger.Info("--- check end ---\n")
 	}
+
 	return nil
 }
 
 // Run storage
 func Run(model config.ModelConfig, archivePath string, complete UploadComplete) (err error) {
-	logger.Info("------------- Storage --------------")
+	logger.Info("------------- Storage (Run) --------------")
 
 	base := newBase(model, archivePath)
-	var ctx Context
+	var ctx StorageContext
 	switch model.StoreWith.Type {
 	case "local":
 		ctx = &Local{Base: base}
@@ -185,15 +289,15 @@ func Run(model config.ModelConfig, archivePath string, complete UploadComplete) 
 		cycler.run(model.Name, filekey, base.keep, ctx.delete)
 	}
 
-	logger.Info("------------- Storage --------------\n")
+	logger.Info("------------- Storage (Run) --------------")
 	return nil
 }
 
-func Check(model config.ModelConfig, archivePath string, complete CheckComplete) (err error) {
-	logger.Info("------------- Storage --------------")
+func Check(model config.ModelConfig, archivePath string, complete UploadComplete) (err error) {
+	logger.Info("------------- Storage (Check) --------------")
 
 	base := newBase(model, archivePath)
-	var ctx Context
+	var ctx StorageContext
 	switch model.StoreWith.Type {
 	case "local":
 		ctx = &Local{Base: base}
@@ -212,22 +316,17 @@ func Check(model config.ModelConfig, archivePath string, complete CheckComplete)
 	logger.Info("=> Storage | " + model.StoreWith.Type)
 	err = ctx.open()
 	if err != nil {
+		logger.Error(err)
 		return err
 	}
 	defer ctx.close()
 
-	if (archivePath == "") {
-		includes := strings.Split(model.Archive.GetString("includes"), "|")
-		includes = cleanPaths(includes)
-
-		excludes := model.Archive.GetStringSlice("excludes")
-		excludes = cleanPaths(excludes)
-
-		for _, include := range includes {
-			checkdir(ctx, model, include, complete)
-		}
-
+	err = checkdir(ctx, model, model.StoreWith.Viper.GetString("path"), complete)
+	if err != nil {
+		logger.Error(err)
+		return err
 	}
 
+	logger.Info("------------- Storage (Check) --------------")
 	return nil
 }

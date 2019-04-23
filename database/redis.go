@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/marmotcai/uploadagent/helper"
 	"github.com/marmotcai/uploadagent/logger"
@@ -36,11 +37,15 @@ type Redis struct {
 	rdbPath string
 }
 
+func (ctx *Redis) GetDBObj() *sql.DB {
+	panic("implement me")
+}
+
 var (
 	redisCliCommand = "redis-cli"
 )
 
-func (ctx *Redis) perform() (err error) {
+func (ctx *Redis) Perform() (err error) {
 	viper := ctx.viper
 	viper.SetDefault("rdb_path", "/var/db/redis/dump.rdb")
 	viper.SetDefault("host", "127.0.0.1")

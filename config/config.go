@@ -29,6 +29,7 @@ var (
 type ModelConfig struct {
 	Name        	string
 	DumpPath    	string
+	OptionWith		*viper.Viper
 	PackWith    	SubConfig
 	EncryptWith 	SubConfig
 	StoreWith   	SubConfig
@@ -74,13 +75,21 @@ type Model_API struct{
 	Url					string `yaml:"Url"`
 }
 
+type Model_Option struct{
+	Suffixwhite			string `yaml:"suffix_white"`
+	Suffixblack			string `yaml:"suffix_black"`
+	LogsFilepath 		string `yaml:"logsfile"`
+}
+
 type Model struct {
-	LogsFilepath 			string `yaml:"logsfile"`
+	Option_with		Model_Option `yaml:"option"`
+
+
 	Pack_with struct {
 		Type              	string `yaml:"type"`
 	}
 
-	Store_with			Model_Store `yaml:"store_with"`
+	Store_with				Model_Store `yaml:"store_with"`
 
 	Archive struct {
 		Pack				string `yaml:"pack"`
@@ -114,7 +123,11 @@ func NewModel_API() *Model_API {
 	return &Model_API{}
 }
 
-func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepath string) error {
+func NewModel_Option() *Model_Option {
+	return &Model_Option{}
+}
+
+func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, option *Model_Option, local, filepath string) error {
 	TempPath = path.Join(os.TempDir(), helper.App_name)
 	if (!helper.PathExists(TempPath)) {
 		helper.MkdirP(TempPath)
@@ -126,11 +139,19 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, local, filepa
 		err = yaml.Unmarshal(f, dc)
 	}
 
-	if (len(dc.Models.M.LogsFilepath) <= 0) {
-		dc.Models.M.LogsFilepath = path.Join(helper.GetCurrentPath(), "logs")
+	if (len(option.LogsFilepath) > 0) {
+		dc.Models.M.Option_with.LogsFilepath = option.LogsFilepath
+	} else {
+		dc.Models.M.Option_with.LogsFilepath = path.Join(helper.GetCurrentPath(), "logs")
 	}
+	logger.Loadlogsfile(dc.Models.M.Option_with.LogsFilepath, fmt.Sprintf("ua-%s.logs", time.Now().Format("2006-01-02-15")))
 
-	logger.Loadlogsfile(dc.Models.M.LogsFilepath, fmt.Sprintf("ua-%s.logs", time.Now().Format("2006-01-02-15")))
+	if (len(option.Suffixwhite) > 0) {
+		dc.Models.M.Option_with.Suffixwhite = option.Suffixwhite
+	}
+	if (len(option.Suffixblack) > 0) {
+		dc.Models.M.Option_with.Suffixblack = option.Suffixblack
+	}
 
 	dc.Models.M.Pack_with.Type = "none"
 	dc.Models.M.Archive.Pack = "false"
@@ -322,6 +343,8 @@ func loadModel(key string) (model ModelConfig) {
 	model.Name = key
 	model.DumpPath = path.Join(TempPath, fmt.Sprintf("%d", time.Now().UnixNano()), key)
 	model.Viper = viper.Sub("models." + key)
+
+	model.OptionWith = model.Viper.Sub("option")
 
 	model.PackWith = SubConfig{
 		Type:  model.Viper.GetString("pack_with.type"),
