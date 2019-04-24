@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -63,13 +64,15 @@ func uploadinfofile(ctx StorageContext, model config.ModelConfig, filekey, filep
 	if (err != nil) {
 		logger.Info("get mediainfo json error : %s", err)
 	}
-	if (helper.PathExists(jsonfile)) {
+	if (helper.IsExistsPath(jsonfile)) {
 		_, err := ctx.uploadfile(jsonfilekey, jsonfile, remotepath)
 		if (err != nil) {
 			logger.Info("upload %s error : $s\n", jsonfile, err)
 		}
 	}
-	err = complete(model, data)
+	if (complete != nil) {
+		err = complete(model, data)
+	}
 	if (err != nil) {
 		return fmt.Errorf("complete post %s error : $s\n", filekey, err)
 	}
@@ -89,7 +92,11 @@ func uploadfile(ctx StorageContext, model config.ModelConfig, filekey string, fi
 func uploaddir(ctx StorageContext, model config.ModelConfig, dir string, complete UploadComplete) (error) {
 	logger.Info("upload ", dir)
 
-	files, _ := helper.GetFilelist(dir, "")
+	upload_error := 0
+	upload_success := 0
+
+	suffix_white := model.OptionWith.GetString("suffix_white")
+	files, _ := helper.GetFilelist(dir, suffix_white)
 	for _, filepath := range files {
 		logger.Info("-- ", filepath)
 		if (helper.IsTempfile(filepath)) {
@@ -102,9 +109,16 @@ func uploaddir(ctx StorageContext, model config.ModelConfig, dir string, complet
 
 		err := uploadfile(ctx, model, filekey, filepath, remotepath, complete)
 		if (err != nil) {
-			return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
+			upload_error ++
+			continue;
+			// return fmt.Errorf("uploadfile %s error : $s\n", filekey, err)
 		}
+		upload_success ++
 	}
+
+	logger.Info("upload success: " + strconv.Itoa(upload_success))
+	logger.Info("upload error: " + strconv.Itoa(upload_error))
+
 	return nil
 }
 
@@ -187,7 +201,8 @@ func checkdir(ctx StorageContext, model config.ModelConfig, dir string, complete
 	}
 
 	suffix_white := model.OptionWith.GetString("suffix_white")
-
+	infodblost_count := 0
+	infofilelost_count := 0
 	dbobj := dbctx.GetDBObj()
 	files, _ := helper.GetFilelist(dir, suffix_white)
 	for _, filepath := range files {
@@ -206,7 +221,7 @@ func checkdir(ctx StorageContext, model config.ModelConfig, dir string, complete
 
 		if 	(suffix != ".info") {
 			infofilename := filepath + ".info"
-			if (helper.PathExists(infofilename)) {
+			if (helper.IsExistsPath(infofilename)) {
 				//如果找到已经保存的文件则查询是否有对应的info文件，同时校验info文件是否上报到了数据库
 
 				err := checkinfofile(dbobj, infofilename)
@@ -214,24 +229,34 @@ func checkdir(ctx StorageContext, model config.ModelConfig, dir string, complete
 					logger.Info("check info file ok: ", filepath)
 				} else {
 					logger.Error("check info file failed: ", err)
+					infodblost_count ++
 				}
 
 			} else {
 				if (helper.IsMediafile(filepath)) {
 					logger.Error("info file not found! the media file: ", filepath)
+					infofilelost_count ++
+/*
+					prefix_path := model.OptionWith.GetString("prefix_path")
 
-					uploadinfofile(ctx, model, path.Base(filepath), filepath, path.Dir(filepath), "", complete)
+					uploadinfofile(ctx, model, path.Base(filepath), filepath, path.Dir(filepath),
+						strings.Replace(filepath, prefix_path, "", -1), complete)*/
+				} else {
+					logger.Error("info file not found! is not media file: ", filepath)
 				}
 			}
 		} else {
 			//如果是info文件则反查对应的数据文件是否存在，一般来说不会出现不存在的情况
 			mediafilepath := strings.Replace(filepath, suffix, "", -1)
-			if (!helper.PathExists(mediafilepath)) {
+			if (!helper.IsExistsPath(mediafilepath)) {
 				logger.Error("media file not found! the info file: ", filepath)
 			}
 		}
 		logger.Info("--- check end ---\n")
 	}
+
+	logger.Info("info db lost count: " + strconv.Itoa(infodblost_count))
+	logger.Info("info file lost count: " + strconv.Itoa(infofilelost_count))
 
 	return nil
 }

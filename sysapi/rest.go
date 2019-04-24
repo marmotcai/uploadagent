@@ -3,9 +3,8 @@ package sysapi
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"github.com/marmotcai/uploadagent/logger"
 	"net/http"
-	"unsafe"
 )
 
 type Rest struct {
@@ -24,15 +23,17 @@ func (Rest) Post(url string, data []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
-
+	logger.Info("post rest api success: ", resp.Status)
+	/*
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
+
 	//byte数组直接转成string，优化内存
 	str := (*string)(unsafe.Pointer(&respBytes))
 	fmt.Println(*str)
-
+	*/
 	return nil
 }

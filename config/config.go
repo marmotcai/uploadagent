@@ -78,6 +78,7 @@ type Model_API struct{
 type Model_Option struct{
 	Suffixwhite			string `yaml:"suffix_white"`
 	Suffixblack			string `yaml:"suffix_black"`
+	PrefixPath			string `yaml:"prefix_path"`
 	LogsFilepath 		string `yaml:"logsfile"`
 }
 
@@ -129,7 +130,7 @@ func NewModel_Option() *Model_Option {
 
 func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, option *Model_Option, local, filepath string) error {
 	TempPath = path.Join(os.TempDir(), helper.App_name)
-	if (!helper.PathExists(TempPath)) {
+	if (!helper.IsExistsPath(TempPath)) {
 		helper.MkdirP(TempPath)
 	}
 	dc := new(DefaultConfig)
@@ -151,6 +152,9 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, option *Model
 	}
 	if (len(option.Suffixblack) > 0) {
 		dc.Models.M.Option_with.Suffixblack = option.Suffixblack
+	}
+	if (len(option.PrefixPath) > 0) {
+		dc.Models.M.Option_with.PrefixPath = option.PrefixPath
 	}
 
 	dc.Models.M.Pack_with.Type = "none"

@@ -68,10 +68,10 @@ func GetCurrentPath() string {
 func GetDefaultConfigPath() string {
 	return fmt.Sprintf("%s/.%s.yml", GetCurrentPath(), App_config)
 }
-
+/*
 // 判断所给路径文件/文件夹是否存在
-func PathExists(path string) (bool) {
-	_, err := os.Stat(path)
+func PathExists(filepath string) (bool) {
+	_, err := os.Stat(filepath)
 	if err == nil {
 		return true
 	}
@@ -79,6 +79,14 @@ func PathExists(path string) (bool) {
 		return false
 	}
 	return false
+}
+*/
+func GetFileSize(filepath string) (int64) {
+	fileinfo, err := os.Stat(filepath)
+	if err != nil {
+		return 0
+	}
+	return fileinfo.Size()
 }
 
 // 判断所给路径是否为文件夹
@@ -125,7 +133,10 @@ func IsTempfile(filepath string) bool {
 
 func GetFilelist(dirPth, suffix string) ([]string, error) {
 	var files []string
-	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
+	var suffixs []string
+	if (len(suffix) > 0) {
+		suffixs = strings.Split(suffix, "|")
+	}
 
 	err := filepath.Walk(dirPth, func(filename string, fi os.FileInfo, err error) error { //遍历目录
 		if fi == nil {
@@ -136,9 +147,15 @@ func GetFilelist(dirPth, suffix string) ([]string, error) {
 			return nil
 		}
 
-		if ((suffix == "") ||
-			(strings.HasSuffix(strings.ToUpper(fi.Name()), suffix))) {
-
+		hava := false
+		for j := 0; j < len(suffixs); j++ {
+			s := strings.ToUpper(suffixs[j])
+			if (strings.HasSuffix(strings.ToUpper(path.Ext(fi.Name())), s)) {
+				hava = true
+				break
+			}
+		}
+		if (len(suffixs) <= 0) || (hava) {
 			files = append(files, filename)
 		}
 		return nil

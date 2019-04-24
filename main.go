@@ -64,9 +64,9 @@ func Check(configfile, modelName string) {
 //s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "input" -ssorcepath_style "true" -keyformat "%CLASS_LAST0%/%HASH_TOP0%/%HASHFULL%" -l "./" exec
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
 //ftp demo : -st "ftp" -surl "192.168.2.9:21" -suser "caijun:aa112233" -spath "cloudgather/source/raw/senyu/series" -keyformat "%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/guizhou/SY-01/电视剧/" coonfig
-//local demo : -st "local" -spath "/Users/andrewcai/9/raw/" -keyformat "%CLASS_LAST2%/%HASH_TOP2%/%HASHFULL%" -oismove "false" -l "/Users/andrewcai/9/raw/chengdu/190124 YK 媒资/电影" config
+//local demo : -st "local" -spath "/Users/andrewcai/nas-9/object-raw/output/senyu" -keyformat "%CLASS_LAST1%/%HASH_TOP0%/%HASHFULL%" -oismove "false" -suffixw "rm|rmvb|mxf" -l "/Users/andrewcai/nas-9/raw/senyu" config
 //api demo : -at "rest" -aurl "http://192.168.2.7/restApi/movie/add" config
-//check demo : check
+//check demo : -prefixp "/Users/andrewcai/nas-9/object-raw/output" -st "local" -spath "/Users/andrewcai/nas-9/object-raw/output/senyu" -oismove "false" -l "" -logspath "./logs" -suffixw "rm|rmvb|mxf" -suffixb "exe|txt" -at "rest" -aurl "http://svr-7.lan/restApi/movie/add" check
 func main() {
 	app := cli.NewApp()
 
@@ -191,6 +191,11 @@ func main() {
 		cli.StringFlag{
 			Name: "suffix-black, suffixb", Usage: "suffix-black", Destination: &option.Suffixblack,
 		},
+
+		//prefix path
+		cli.StringFlag{
+			Name: "prefix-path, prefixp", Usage: "prefix-path", Destination: &option.PrefixPath,
+		},
 	}
 
 	app.Commands = []cli.Command{
@@ -199,8 +204,8 @@ func main() {
 			Aliases: []string{"config"},
 			Usage:   "write config file",
 			Action: func(c *cli.Context) error {
-				logger.Info("config model ...")
 				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
+				logger.Info("config model ...")
 				return nil
 			},
 		},
@@ -209,9 +214,8 @@ func main() {
 			Aliases: []string{"exec"},
 			Usage:   "write config file & upload",
 			Action: func(c *cli.Context) error {
-				logger.Info("config & exec model...")
 				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
-
+				logger.Info("config & exec model...")
 				Perform(helper.GetDefaultConfigPath(), modelname)
 
 				return nil
@@ -222,9 +226,8 @@ func main() {
 			Aliases: []string{"check"},
 			Usage:   "check data",
 			Action: func(c *cli.Context) error {
-				logger.Info("check data model...")
 				config.WriteConfig(store, db, api, option, localpath, helper.GetDefaultConfigPath())
-
+				logger.Info("check data model...")
 				Check(helper.GetDefaultConfigPath(), modelname)
 
 				return nil
@@ -236,9 +239,8 @@ func main() {
 			Usage:   "load config file & exec",
 			Action: func(c *cli.Context) error {
 				if configfile != "" {
-					logger.Info("load config file %s", configfile)
 					config.LoadConfig(configfile)
-
+					logger.Info("load config file %s", configfile)
 					Perform(configfile, modelname)
 				}
 				return nil

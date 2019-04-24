@@ -31,8 +31,14 @@ func (ctx *Local) uploadfile(fileKey, filepath, remotepath string) (string, erro
 	if (ctx.model.StoreWith.Viper.GetBool("IsMove")) {
 		cmdstr = "mv"
 	}
-	_, err := helper.Exec(cmdstr, filepath, remotefilepath)
-
+	var err error
+	if helper.IsExistsPath(remotefilepath) {
+		if (helper.GetFileSize(filepath) == helper.GetFileSize(remotefilepath)) {
+			logger.Info("file is exists", remotefilepath)
+		}
+	} else {
+		_, err = helper.Exec(cmdstr, filepath, remotefilepath)
+	}
 	if err != nil {
 		return "", err
 	}
