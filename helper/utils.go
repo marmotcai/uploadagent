@@ -1,9 +1,10 @@
 package helper
 
 import (
-	"flag"
+	"bufio"
+	"crypto/sha1"
 	"fmt"
-	"github.com/yanyiwu/gosimhash"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+//	"github.com/yanyiwu/gosimhash"
 )
 
 const (
@@ -28,18 +30,18 @@ var (
 	// IsGnuTar show tar type
 	IsGnuTar = false
 )
-
+/*
 var top_n = flag.Int("top_n", 6, "")
 var sher gosimhash.Simhasher
-
+*/
 func init() {
 	checkIsGnuTar()
-
+/*
 	sher = gosimhash.New("./dict/jieba.dict.utf8",
 						"./dict/hmm_model.utf8",
 						"./dict/idf.utf8",
 					"./dict/stop_words.utf8")
-	// defer sher.Free()
+	// defer sher.Free()*/
 }
 
 func checkIsGnuTar() {
@@ -68,19 +70,35 @@ func GetCurrentPath() string {
 func GetDefaultConfigPath() string {
 	return fmt.Sprintf("%s/.%s.yml", GetCurrentPath(), App_config)
 }
-/*
-// 判断所给路径文件/文件夹是否存在
-func PathExists(filepath string) (bool) {
-	_, err := os.Stat(filepath)
-	if err == nil {
-		return true
-	}
-	if os.IsNotExist(err) {
-		return false
-	}
-	return false
+
+func processBlock(line []byte) {
+	os.Stdout.Write(line)
 }
-*/
+
+func ReadBlock(filePth string, bufSize int, hookfn func([]byte)) error {
+	f, err := os.Open(filePth)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	buf := make([]byte, bufSize) //一次读取多少个字节
+	bfRd := bufio.NewReader(f)
+	for {
+		n, err := bfRd.Read(buf)
+		hookfn(buf[:n]) // n 是成功读取字节数
+
+		if err != nil { //遇到任何错误立即返回，并忽略 EOF 错误信息
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func GetFileSize(filepath string) (int64) {
 	fileinfo, err := os.Stat(filepath)
 	if err != nil {
@@ -302,8 +320,27 @@ func GetNameFromPath(url string) (string, error) {
 }
 
 func GetFileKey(filepath, formatstr string) (string, string) {
-	filekey := fmt.Sprintf("%x",
-		sher.MakeSimhash(strconv.FormatInt(GetEigenvalue(filepath),10) + "_" + path.Base(filepath), *top_n))
+
+	f, err := os.Open(filepath)
+	if err != nil {
+		return "", ""
+	}
+	defer f.Close()
+
+	buf := make([]byte, 128) //一次读取多少个字节
+	bfRd := bufio.NewReader(f)
+	_, err = bfRd.Read(buf)
+	if err != nil { //遇到任何错误立即返回，并忽略 EOF 错误信息
+		return "", ""
+	}
+
+	Sha1Inst := sha1.New()
+	Sha1Inst.Write(buf)
+	hashstr := Sha1Inst.Sum([]byte(""))
+
+	filekey := fmt.Sprintf("%x", hashstr)
+	/*filekey := fmt.Sprintf("%x",
+		sher.MakeSimhash(strconv.FormatInt(GetEigenvalue(filepath),10) + "_" + path.Base(filepath), *top_n))*/
 	filekey = filekey + path.Ext(filepath)
 
 	destpath := ""
