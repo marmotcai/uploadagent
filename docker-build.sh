@@ -24,6 +24,9 @@ echo "output path : ${output_path}"
 echo "output app filename : ${app_name}"
 echo "arch : ${arch}"
 
+gopath=$PWD/output/src
+echo "gopath src : ${gopath}"
+
 case $arch in
     arm)
       docker run --rm -ti \
@@ -31,12 +34,14 @@ case $arch in
                  --env GOARCH=arm \
                  --env GOOS=linux \
                  -v $output_path:/root/output \
+                 -v $gopath:/root/mygo/src \
                  marmotcai/golang-builder build $git_url $app_name
     ;;
 
     *)
       docker run --rm -ti \
                  -v $output_path:/root/output \
+                 -v $gopath:/root/mygo/src \
                  marmotcai/golang-builder build $git_url $app_name
     ;;
 
