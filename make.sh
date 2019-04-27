@@ -15,14 +15,17 @@ case $cmd in
     ;;
 
     build)
-      docker build -t ${param1} .
-      docker run --rm -ti ${param1} /bin/bash
+      sh docker-build.sh github.com/marmotcai/uploadagent $PWD/output ua
+    ;;
+
+    build-arm)
+      sh docker-build.sh github.com/marmotcai/uploadagent $PWD/output ua arm
     ;;
 
     *)
       echo "use: sh make.sh commit"
       echo "use: sh make.sh pull"
-      echo "use: sh make.sh build imagename"
+      echo "use: sh make.sh build"
     ;;
 esac
 
