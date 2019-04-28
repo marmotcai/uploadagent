@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if  [[ ${1} = 'test' ]]; then
+      docker run --rm -ti \
+                 -v $output_path:/root/output \
+                 -v $gopath:/root/mygo/src \
+                 marmotcai/golang-builder /bin/bash
+fi
+
 git_url=${1}
 output_path=${2}
 app_name=${3}
@@ -11,7 +18,7 @@ if  [[ ${git_url} = '' ]]; then
 fi
 
 if  [[ ${output_path} = '' ]]; then
-  output_path="./"  
+  output_path=$PWD/output/bin 
 fi
 
 if  [[ ${app_name} = '' ]]; then
@@ -29,7 +36,8 @@ echo "gopath src : ${gopath}"
 
 case $arch in
     arm)
-      docker run --rm -ti \
+      docker run -ti \
+                 --name my-builder \
                  --env CGO_ENABLE=0 \
                  --env GOARCH=arm \
                  --env GOOS=linux \
@@ -39,7 +47,8 @@ case $arch in
     ;;
 
     *)
-      docker run --rm -ti \
+      docker run -ti \
+                 --name my-builder \
                  -v $output_path:/root/output \
                  -v $gopath:/root/mygo/src \
                  marmotcai/golang-builder build $git_url $app_name
