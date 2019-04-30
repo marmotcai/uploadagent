@@ -335,6 +335,7 @@ func GetFileKey(filepath, formatstr string) (string, string) {
 	}
 
 	Sha1Inst := sha1.New()
+	Sha1Inst.Write([]byte(path.Base(filepath)))
 	Sha1Inst.Write(buf)
 	hashstr := Sha1Inst.Sum([]byte(""))
 
