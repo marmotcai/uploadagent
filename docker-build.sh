@@ -1,10 +1,14 @@
 #!/bin/bash
 
+gopath=$PWD/output/src
+
 if  [[ ${1} = 'test' ]]; then
-      docker run --rm -ti \
-                 -v $output_path:/root/output \
-                 -v $gopath:/root/mygo/src \
-                 marmotcai/golang-builder /bin/bash
+    echo "gopath src : ${gopath}"
+    docker run --rm -ti \
+               -v $PWD/output/bin:/root/output \
+               -v ${gopath}:/root/mygo/src \
+               marmotcai/golang-builder /bin/bash
+    exit 0
 fi
 
 git_url=${1}
@@ -13,7 +17,7 @@ app_name=${3}
 arch=${4}
 
 if  [[ ${git_url} = '' ]]; then
-  echo "use: docker-build.sh git_url ./output ua"
+  echo "use: docker-build.sh git_url $PWD/output/bin ua"
   exit 0
 fi
 
@@ -30,8 +34,6 @@ echo "git url : ${git_url}"
 echo "output path : ${output_path}"
 echo "output app filename : ${app_name}"
 echo "arch : ${arch}"
-
-gopath=$PWD/output/src
 echo "gopath src : ${gopath}"
 
 case $arch in
