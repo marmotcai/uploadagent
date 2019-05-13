@@ -59,7 +59,7 @@ func Check(configfile, modelName string) {
 	}
 }
 
-//option demo : -logspath "./logs" -suffixw "rm/rmvb/mxf" -suffixb "exe/txt" config
+//option demo : -logspath "./logs" -suffixw "rm/rmvb/mxf" -suffixb "exe/txt" --namelevel "3" config
 //db demo : -dt "mysql" -dh "db.cloudgather.cn" -dp "33306" -dd "mms_test" -du "root" -dw "cg123456" config
 //s3 demo : -st "s3" -surl "http://192.168.2.9:3090" -suser "4V1cweFJGTlhjM2hOUkVGM1RVUm9RV0l5U25GYVYwNHdURmhLTTA5WE9WcE5Wa1U5PNJI:4WVRGQ01GWklVak50VWpGamMyWmFZV014Y0ZWbFFUMDk=qEyE" -spath "/" -sregion "my-region" -sbucket "input" -ssorcepath_style "true" -keyformat "%CLASS_LAST0%/%HASH_TOP0%/%HASHFULL%" -l "./" exec
 //scp demo : -st "scp" -surl "192.168.2.72:22" -suser "root:cg112233" -spath "/root/temp" config
@@ -181,6 +181,10 @@ func main() {
 			Name: "Logs-Filepath, logspath", Usage: "logs file path", Destination: &option.LogsFilepath,
 		},
 
+		//name level
+		cli.StringFlag{
+			Name: "name-level, namelevel", Usage: "name-level", Destination: &option.NameLevel,
+		},
 
 		//suffix white
 		cli.StringFlag{

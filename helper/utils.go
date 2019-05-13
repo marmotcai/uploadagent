@@ -240,7 +240,7 @@ func SimilarText(first, second string, percent *float64) int {
 	return sim
 }
 
-func GetNameFromPath(url string) (string, error) {
+func GetNameFromPath(url string, level int) (string, error) {
 	parentdir := ""
 
 	suffix := strings.ToLower(path.Ext(path.Base(url)))
@@ -295,7 +295,15 @@ func GetNameFromPath(url string) (string, error) {
 						return fmt.Errorf("OK:" + name)
 				}}
 
-				return fmt.Errorf("OK:" + dirname + "-" + name)
+				if (level > 0) {
+					dirs := strings.Split(parentdir, "/")
+					for i := len(dirs); (i > 0 && level > 0) ; i-- {
+						name = dirs[i - 1] + "-" + name
+						level --
+					}
+				}
+
+				return fmt.Errorf("OK:" + name)
 			}
 		}
 

@@ -80,6 +80,7 @@ type Model_Option struct{
 	Suffixblack			string `yaml:"suffix_black"`
 	PrefixPath			string `yaml:"prefix_path"`
 	LogsFilepath 		string `yaml:"logsfile"`
+	NameLevel			string `yaml:"namelevel"`
 }
 
 type Model struct {
@@ -155,6 +156,9 @@ func WriteConfig(store *Model_Store, db *Model_DB, api *Model_API, option *Model
 	}
 	if (len(option.PrefixPath) > 0) {
 		dc.Models.M.Option_with.PrefixPath = option.PrefixPath
+	}
+	if (len(option.NameLevel) > 0) {
+		dc.Models.M.Option_with.NameLevel = option.NameLevel
 	}
 
 	dc.Models.M.Pack_with.Type = "none"

@@ -60,7 +60,8 @@ func getremotepath(defaultpath, destpath string) (string) {
 func uploadinfofile(ctx StorageContext, model config.ModelConfig, filekey, filepath, remotepath, remoteurl string, complete UploadComplete) (error) {
 	jsonfilekey := filekey + ".info"
 	jsonfile := config.TempPath + "/" + jsonfilekey
-	data, err := helper.GetJsondata(filekey, filepath, remoteurl, jsonfile)
+	level := model.OptionWith.GetInt("namelevel")
+	data, err := helper.GetJsondata(filekey, filepath, remoteurl, jsonfile, level)
 	if (err != nil) {
 		logger.Info("get mediainfo json error : %s", err)
 	}

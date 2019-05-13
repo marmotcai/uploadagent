@@ -40,7 +40,7 @@ func GetMediainfo(filepath string) (string, error) {
 	return ms, nil
 }
 
-func GetJsondata(key, localfile, url, jsonfile string) ([]byte, error) {
+func GetJsondata(key, localfile, url, jsonfile string, level int) ([]byte, error) {
 	if (!IsMediafile(localfile)) {
 		return nil, nil
 	}
@@ -63,7 +63,7 @@ func GetJsondata(key, localfile, url, jsonfile string) ([]byte, error) {
 					v, _ := v.(map[string]interface{})
 
 					if (k == "general") {
-						name, err := GetNameFromPath(localfile)
+						name, err := GetNameFromPath(localfile, level)
 						if (err != nil) {
 							name = path.Base(localfile)
 						}
