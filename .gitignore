@@ -6,6 +6,8 @@ local.properties
 gradle
 epg/gradle
 output/src
+output/logs
+output/uploadagent
 build
 libs
 captures

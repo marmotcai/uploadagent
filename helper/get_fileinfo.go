@@ -31,7 +31,8 @@ func GetMediainfo(filepath string) (string, error) {
 
 	var opts []string
 	opts = append(opts, filepath)
-	opts = append(opts, "--Inform=file://mediaformat")
+	opts = append(opts, "--Output=JSON")
+	//opts = append(opts, "--Inform=file://mediaformat")
 	ms, err := Exec("mediainfo", opts...)
 	if err != nil {
 		return "", err
@@ -54,6 +55,20 @@ func GetJsondata(key, localfile, url, jsonfile string, level int) ([]byte, error
 	}
 	//要访问解码后的数据结构，需要先判断目标结构是否为预期的数据类型
 	mi, ok := inter.(map[string]interface{})
+	if ok {
+		name, err := GetNameFromPath(localfile, level)
+		if (err != nil) {
+			name = path.Base(localfile)
+		}
+		v := make(map[string]interface{})
+		v["path"] = localfile
+		v["url"] = url
+		v["name"] = name
+		v["filekey"] = key
+
+		mi["general"] = v
+	}
+/*
 	//然后通过for循环一一访问解码后的目标数据
 	if ok {
 		for k, v := range mi {
@@ -80,6 +95,7 @@ func GetJsondata(key, localfile, url, jsonfile string, level int) ([]byte, error
 			}
 		}
 	}
+*/
 	data, err := json.Marshal(inter)
 
 	if (len(jsonfile) >= 0) {
