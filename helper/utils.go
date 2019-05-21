@@ -125,6 +125,9 @@ func IsMediafile(filename string) bool {
 	suffix := strings.ToLower(path.Ext(filename))
 
 	if 	(suffix == ".ts") ||
+		(suffix == ".wmv") ||
+		(suffix == ".mp3") ||
+		(suffix == ".wav") ||
 		(suffix == ".mpg") ||
 		(suffix == ".mpeg") ||
 		(suffix == ".avi") ||
