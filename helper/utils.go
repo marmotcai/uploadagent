@@ -126,6 +126,7 @@ func IsMediafile(filename string) bool {
 
 	if 	(suffix == ".ts") ||
 		(suffix == ".wmv") ||
+		(suffix == ".asf") ||
 		(suffix == ".mp3") ||
 		(suffix == ".wav") ||
 		(suffix == ".mpg") ||
