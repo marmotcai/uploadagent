@@ -172,7 +172,8 @@ func GetFilelist(dirPth, suffix string) ([]string, error) {
 		hava := false
 		for j := 0; j < len(suffixs); j++ {
 			s := strings.ToUpper(suffixs[j])
-			if (strings.HasSuffix(strings.ToUpper(path.Ext(fi.Name())), s)) {
+			// if (strings.HasSuffix(strings.ToUpper(path.Ext(fi.Name())), s)) {
+			if (strings.Contains(strings.ToUpper(filename), s)) {
 				hava = true
 				break
 			}
@@ -329,6 +330,25 @@ func GetNameFromPath(url string, level int) (string, error) {
 	}
 	name := strings.TrimSuffix(basefilename, suffix)
 	return name, err //可能是电影
+}
+
+func ReadAllIntoMemory(filename string) (content []byte, err error) {
+	fp, err := os.Open(filename) // 获取文件指针
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	fileInfo, err := fp.Stat()
+	if err != nil {
+		return nil, err
+	}
+	buffer := make([]byte, fileInfo.Size())
+	_, err = fp.Read(buffer) // 文件内容读取到buffer中
+	if err != nil {
+		return nil, err
+	}
+	return buffer, nil
 }
 
 func GetFileKey(filepath, formatstr string) (string, string) {

@@ -252,6 +252,13 @@ func checkdir(ctx StorageContext, model config.ModelConfig, dir string, complete
 			if (!helper.IsExistsPath(mediafilepath)) {
 				logger.Error("media file not found! the info file: ", filepath)
 			}
+			logger.Info("upload info file:", filepath)
+
+			data, err := helper.ReadAllIntoMemory(filepath)
+			if err != nil {
+				logger.Error("read info file error: ", filepath)
+			}
+			complete(model, data)
 		}
 		logger.Info("--- check end ---\n")
 	}
