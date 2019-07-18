@@ -68,6 +68,14 @@ func Check(configfile, modelName string) {
 //api demo : -at "rest" -aurl "http://192.168.2.7/restApi/movie/add" config
 //check demo : -prefixp "/Users/andrewcai/nas-9/object-raw/output" -st "local" -spath "/Users/andrewcai/nas-9/object-raw/output/senyu" -oismove "false" -l "" -logspath "./logs" -suffixw "rm|rmvb|mxf" -suffixb "exe|txt" -at "rest" -aurl "http://svr-7.lan/restApi/movie/add" check
 func main() {
+	/*
+	_, filekey := helper.GetFileKey("/Users/andrewcai/nas-9/raw/senyu/SY-13/ts/悠悠寸草心Ⅱ/01.ts", "")
+	logger.Info(filekey)
+
+	_, filekey1 := helper.GetFileKey("/Users/andrewcai/nas-9/raw/senyu/SY-13/ts/大校女儿/01.ts", "")
+	logger.Info(filekey1)
+	*/
+	
 	app := cli.NewApp()
 
 	app.Name = helper.App_name
