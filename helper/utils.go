@@ -138,6 +138,7 @@ func IsMediafile(filename string) bool {
 		(suffix == ".rm") ||
 		(suffix == ".rmvb") ||
 		(suffix == ".m2ts") ||
+		(suffix == ".vob") ||
 		(suffix == ".mxf") {
 		return true
 	}
