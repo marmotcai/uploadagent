@@ -68,6 +68,10 @@ func GetDBModel(model config.ModelConfig, dbConfig config.SubConfig) (DBContext)
 func runModel(model config.ModelConfig, dbConfig config.SubConfig) (err error) {
 
 	ctx := GetDBModel(model, dbConfig)
+	if ctx == nil {
+		return nil
+	}
+
 	// perform
 	err = ctx.Perform()
 	if err != nil {

@@ -118,7 +118,7 @@ func (ctx *Redis) save() error {
 		return fmt.Errorf("redis-cli SAVE failed %s", err)
 	}
 
-	if !regexp.MustCompile("OK$").MatchString(strings.TrimSpace(out)) {
+	if !regexp.MustCompile("OK$").MatchString(strings.TrimSpace(string(out))) {
 		return fmt.Errorf(`Failed to invoke the "SAVE" command Response was: %s`, out)
 	}
 

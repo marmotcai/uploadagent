@@ -9,11 +9,16 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"unsafe"
 )
 
 var (
 	spaceRegexp = regexp.MustCompile("[\\s]+")
 )
+
+func  String(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
 
 // Exec cli commands
 func Exec(command string, args ...string) (output string, err error) {
@@ -47,6 +52,7 @@ func Exec(command string, args ...string) (output string, err error) {
 		return
 	}
 
-	output = strings.Trim(string(out), "\n")
-	return
+	output = strings.Trim(String(out), "\n")
+
+	return output, nil
 }

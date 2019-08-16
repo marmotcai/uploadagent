@@ -4,6 +4,8 @@
 .exe
 local.properties
 gradle
+.vendor
+vendor
 epg/gradle
 output/src
 output/logs

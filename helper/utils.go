@@ -46,7 +46,7 @@ func init() {
 
 func checkIsGnuTar() {
 	out, _ := Exec("tar", "--version")
-	IsGnuTar = strings.Contains(out, "GNU")
+	IsGnuTar = strings.Contains(string(out), "GNU")
 }
 
 func checkErr(err error) {
@@ -125,6 +125,7 @@ func IsMediafile(filename string) bool {
 	suffix := strings.ToLower(path.Ext(filename))
 
 	if 	(suffix == ".ts") ||
+		(suffix == ".flv") ||
 		(suffix == ".wmv") ||
 		(suffix == ".asf") ||
 		(suffix == ".mp3") ||

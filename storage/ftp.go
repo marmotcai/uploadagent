@@ -1,13 +1,14 @@
 package storage
 
 import (
+	_ "bufio"
 	"fmt"
 	"github.com/marmotcai/uploadagent/logger"
+	"github.com/secsy/goftp"
+	"github.com/howeyc/gopass"
 	"os"
 	"path"
 	"strings"
-
-	"github.com/secsy/goftp"
 	"time"
 )
 
@@ -100,6 +101,20 @@ func (ctx *FTP) open() (err error) {
 	if (len(user) >= 2) {
 		ctx.username = user[0]
 		ctx.password = user[1]
+	}
+
+	if (len(ctx.username) <= 0) {
+		fmt.Printf("login name: ")
+		fmt.Scanln(&ctx.username)
+	}
+	if (len(ctx.password) <= 0) {
+		fmt.Printf("Password: ")
+
+		// Silent. For printing *'s use gopass.GetPasswdMasked()
+		password, err := gopass.GetPasswd()
+		if err != nil {
+		}
+		ctx.password = string(password)
 	}
 
 	ftpConfig := goftp.Config{

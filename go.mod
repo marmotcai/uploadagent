@@ -8,6 +8,7 @@ require (
 	github.com/bramvdbogaerde/go-scp v0.0.0-20190409174733-583e65a51240
 	github.com/fatih/color v1.7.0
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/secsy/goftp v0.0.0-20180816013212-012609e90524
