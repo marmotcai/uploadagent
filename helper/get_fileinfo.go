@@ -56,7 +56,11 @@ func GetJsondata(key, localfile, url, jsonfile string, level int) ([]byte, error
 	//要访问解码后的数据结构，需要先判断目标结构是否为预期的数据类型
 	mi, ok := inter.(map[string]interface{})
 	if ok {
-		name, err := GetNameFromPath(localfile, level)
+		//liujx --
+		//name, err := GetNameFromPath(localfile, level)
+		name, err := GetSimpleNameFromPath(localfile)
+		//-- liujx
+
 		if (err != nil) {
 			name = path.Base(localfile)
 		}

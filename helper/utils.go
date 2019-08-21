@@ -334,6 +334,15 @@ func GetNameFromPath(url string, level int) (string, error) {
 	return name, err //可能是电影
 }
 
+//-- liujx
+func GetSimpleNameFromPath(url string) (string, error) {
+
+	suffix := path.Ext(url)
+	name := strings.Replace(strings.TrimSuffix(url, suffix), "/", "-", -1)
+
+	return name, nil
+}
+
 func ReadAllIntoMemory(filename string) (content []byte, err error) {
 	fp, err := os.Open(filename) // 获取文件指针
 	if err != nil {
