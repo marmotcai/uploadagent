@@ -155,12 +155,14 @@ func generate(src, suffix string) (int, error) {
 
 		md5file := file + ".md5"
 		if IsExistsPath(md5file) {
+
 			fmt.Println("md5 file is exists : " + file)
 		} else {
 			err := ioutil.WriteFile(file+".md5", []byte(md5string), 0644)
 			if err != nil {
 				panic(err)
 			}
+
 			count++
 		}
 	}
@@ -185,6 +187,7 @@ func check(src, suffix string) (int, []string, error) {
 				fmt.Println("check md5 error : " + file + "( " + md5string_old + " => " + md5string + ")")
 			} else {
 				count++
+
 				fmt.Println("check md5 ok : " + file)
 			}
 		} else {
@@ -235,6 +238,7 @@ func main() {
 			fmt.Println("会花费一定时间，请稍等...")
 			count, _ := generate(src, MediaSuffix)
 			Print_Color("** 生成md5已完成, 共生成： " + strconv.Itoa(count) + " 个文件 **")
+
 		} else if strings.Compare("c", text) == 0 {
 			fmt.Println("会花费一定时间，请稍等...")
 			count, err_files, _ := check(src, MediaSuffix)
@@ -252,7 +256,6 @@ func main() {
 			os.Exit(0)
 		}
 	}
-
 	/*
 		var src string
 
